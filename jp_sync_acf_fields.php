@@ -4,7 +4,7 @@
  *
  * @link http://www.advancedcustomfields.com/resources/synchronized-json/
  */
-function jp_sync_acf_fields() {
+function jp_sync_acf_fields($json_dirs) {
 	$groups = acf_get_field_groups();
 	if (empty($groups)) {
 		return;
@@ -30,7 +30,6 @@ function jp_sync_acf_fields() {
 	if (empty($sync)) {
 		return;
 	}
-
 	foreach ($sync as $key => $group) { //foreach ($keys as $key) {
 		// append fields
 		if (acf_have_local_fields($key)) {
@@ -40,5 +39,32 @@ function jp_sync_acf_fields() {
 		// import
 		$field_group = acf_import_field_group($group);
 	}
+
+	// sync groups that have been deleted
+	if (!is_array($json_dirs) || !$json_dirs) {
+		throw new \Exception('JSON dirs missing');
+	}
+	$delete = array();
+	foreach ($groups as $group) {
+		$found = false;
+
+		foreach ($json_dirs as $json_dir) {
+			$json_file = rtrim($json_dir, '/') . '/' . $group['key'] . '.json';
+
+			if (is_file($json_file)) {
+				$found = true;
+
+				break;
+			}
+		}
+
+		if (!$found) {
+			$delete[] = $group['key'];
+		}
+	}
+	if (!empty($delete)) {
+		foreach ($delete as $group_key) {
+			acf_delete_field_group($group_key);
+		}
+	}
 }
-add_action('admin_init', 'jp_sync_acf_fields');
