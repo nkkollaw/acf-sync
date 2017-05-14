@@ -27,22 +27,18 @@ function jp_sync_acf_fields() {
 		}
 	}
 
-	// bail if no sync needed
 	if (empty($sync)) {
 		return;
 	}
 
-	if (!empty($sync)) { //if (! empty($keys)) {
-		foreach ($sync as $key => $group) { //foreach ($keys as $key) {
-			// append fields
-			if (acf_have_local_fields($key)) {
-				$group['fields'] = acf_get_local_fields($key);
-			}
-
-			// import
-			$field_group = acf_import_field_group($group);
+	foreach ($sync as $key => $group) { //foreach ($keys as $key) {
+		// append fields
+		if (acf_have_local_fields($key)) {
+			$group['fields'] = acf_get_local_fields($key);
 		}
-	}
 
+		// import
+		$field_group = acf_import_field_group($group);
+	}
 }
 add_action('admin_init', 'jp_sync_acf_fields');
